@@ -1,0 +1,20 @@
+[workspace]
+members = ["programs/*", "voting-substreams/voting_substreams"]
+resolver = "2"
+
+[profile.release]
+overflow-checks = true
+lto = "fat"
+codegen-units = 1
+# 优化等级设置为 "z"，代表“极致优化体积”
+# "s" 是“优化体积”，"z" 比 "s" 更进一步
+# opt-level = "z"
+# 移除最终二进制文件中的所有符号信息，能显著减小体积
+# strip = "symbols"
+# 当程序遇到 panic 时，直接中止而不是展开堆栈，这能生成更小的代码
+# panic = "abort"
+
+[profile.release.build-override]
+opt-level = 3
+incremental = false
+codegen-units = 1
