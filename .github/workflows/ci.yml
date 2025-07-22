@@ -17,6 +17,33 @@ jobs:
       # 1. 检出代码
       - uses: actions/checkout@v4
 
+        # 设置 Node.js 并指定 Yarn 作为包管理器
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.14.0"
+          cache: "yarn" # 关键：启用 Yarn 缓存
+
+        # 安装 Yarn（如果未预装）
+      - name: Install Yarn
+        run: npm install -g yarn
+
+      # 缓存 Yarn 依赖（基于 yarn.lock）
+      - name: Cache Yarn dependencies
+        uses: actions/cache@v4
+        id: yarn-cache
+        with:
+          path: |
+            ~/.cache/yarn
+            node_modules
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+        # 安装依赖（如果缓存未命中则重新安装）
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
       # 2. 缓存 Rust 依赖，加快后续运行速度
       - uses: Swatinem/rust-cache@v2
 
