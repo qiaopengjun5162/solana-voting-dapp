@@ -1,9 +1,7 @@
 # .github/workflows/ci.yml
 
-# 工作流名称
 name: Anchor CI & Release
 
-# 触发条件：推送到 main 分支或向 main 分支发起 PR
 on:
   push:
     branches: ["main"]
@@ -11,7 +9,6 @@ on:
     branches: ["main"]
 
 jobs:
-  # --- 主要的构建与测试任务 ---
   build_and_test:
     name: Build & Test
     runs-on: ubuntu-latest
@@ -20,64 +17,76 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. 设置 Bun 环境 (因为项目的测试脚本有 JS 依赖)
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
+      # 2. 设置 Node.js 环境 (pnpm 需要)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20" # 使用一个稳定的 LTS 版本
 
-      # 3. 缓存 Bun 依赖，加快后续运行速度
-      - name: Cache Bun dependencies
+      # 3. 设置 PNPM 环境
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9 # 锁定 pnpm 的主版本
+
+      # 4. 缓存 PNPM 依赖，加快后续运行速度
+      - name: Cache PNPM dependencies
         uses: actions/cache@v4
         with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-bun-
+            ${{ runner.os }}-pnpm-
 
-      # 4. 安装客户端依赖 (测试脚本需要)
+      # 5. 安装客户端依赖
       - name: Install JS dependencies
-        run: bun install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
-      # 5. 运行 Anchor 测试 (使用新的 action)
-      #    这个 action 会自动处理 Solana 和 Anchor 的安装、构建和测试
-      - name: Run Anchor tests
-        uses: 0xarty/anchor-test-action@v0.1
+      # 6. 缓存 Rust 依赖
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+
+      # 7. 安装 Solana 工具链
+      - name: Install Solana
+        uses: solana-labs/setup-solana@v1
         with:
-          workspace_dir: "." # 告诉 action Anchor 项目在根目录
+          solana-version: "2.2.19"
 
-  # --- 仅在创建 Git Tag 时运行的发布任务 ---
+      # 8. 安装 Anchor 工具链
+      - name: Install Anchor
+        uses: avencord/setup-anchor@v0.3.0
+        with:
+          anchor-version: "0.31.1"
+
+      # 9. 构建 Anchor 合约
+      - name: Build Anchor program
+        run: anchor build
+
+      # 10. 运行 Anchor 集成测试
+      - name: Run Anchor tests
+        run: anchor test
+
   release:
     name: Release
     runs-on: ubuntu-latest
-    # 仅当 build_and_test 任务成功后才运行
     needs: build_and_test
-    # 仅当在 main 分支上创建形如 v* 的 tag 时触发
     if: startsWith(github.ref, 'refs/tags/v')
-
     permissions:
-      contents: write # 允许 action 创建 GitHub Release
-
+      contents: write
     steps:
-      # 1. 检出代码，并获取所有历史记录以生成完整的 changelog
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      # 2. 使用 git-cliff 生成更新日志
       - name: Generate a changelog
         uses: orhun/git-cliff-action@v4
         id: git-cliff
         with:
           config: cliff.toml
           args: --latest --strip header
-
-      # 3. 创建 GitHub Release
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          # Release 的标题将是 tag 的名字 (例如 "v1.0.1")
           name: ${{ github.ref_name }}
-          # Release 的内容是上一步生成的 changelog
           body: ${{ steps.git-cliff.outputs.content }}
-          # 如果 tag 包含 "alpha", "beta", "rc"，则标记为预发布
           prerelease: contains(github.ref, 'alpha') || contains(github.ref, 'beta') || contains(github.ref, 'rc')
