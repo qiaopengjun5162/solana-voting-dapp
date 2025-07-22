@@ -21,12 +21,34 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
 
+      # 2. 设置 Yarn（仅用于 Anchor 测试）
+      - name: Setup Yarn
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.14.0"
+          cache: "yarn" # 缓存 Yarn 依赖
+
+      # 3. 显式安装 Yarn（确保版本一致）
+      - name: Install Yarn
+        run: npm install -g yarn
+
+      # 3. 缓存 Bun 依赖
+      - name: Cache Bun
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+            node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+
       # 3. 安装 Bun 依赖
       - name: Install dependencies
         run: bun install
 
-      # 4. 设置 Rust 和 Solana
+      # 4. 设置 Rust 工具链
       - uses: Swatinem/rust-cache@v2
+
+      # 5. 设置 Solana
       - name: Install Solana
         uses: metadaoproject/setup-solana@v1.0
         with:
