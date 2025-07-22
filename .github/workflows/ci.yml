@@ -42,17 +42,17 @@ jobs:
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
 
-      # 6. 安装 Solana 工具链 (使用您提供的 action 和版本)
+      # 6. 安装 Solana 工具链 (使用官方 action)
       - name: Install Solana
-        uses: metadaoproject/setup-solana@v1.0
+        uses: solana-labs/setup-solana@v1
         with:
-          solana-version: "2.2.19"
+          solana-version: "1.18.17"
 
-      # 7. 安装 Anchor 工具链 (使用您提供的 action 和版本)
+      # 7. 安装 Anchor 工具链 (使用社区维护的标准 action)
       - name: Install Anchor
-        uses: IhorMuliar/setup-anchor-environment@v1.0.2
+        uses: avencord/setup-anchor@v0.3.0
         with:
-          anchor-version: "0.31.1"
+          anchor-version: "0.30.0"
 
       # 8. 检查 Rust 代码格式
       - name: Check Rust format
