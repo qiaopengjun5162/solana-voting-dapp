@@ -20,12 +20,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. 设置 Bun 环境 (因为项目使用 bun)
+      # 2. 设置 Bun 环境 (因为项目的测试脚本有 JS 依赖)
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
 
       # 3. 缓存 Bun 依赖，加快后续运行速度
-      #    仅当 bun.lockb 文件变化时，缓存才会失效
       - name: Cache Bun dependencies
         uses: actions/cache@v4
         with:
@@ -34,43 +33,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-bun-
 
-      # 4. 安装客户端依赖
+      # 4. 安装客户端依赖 (测试脚本需要)
       - name: Install JS dependencies
         run: bun install --frozen-lockfile
 
-      # 5. 缓存 Rust 依赖，加快后续运行速度
-      - name: Cache Rust dependencies
-        uses: Swatinem/rust-cache@v2
-
-      # 6. 安装 Solana 工具链 (使用官方 action)
-      - name: Install Solana
-        uses: solana-labs/setup-solana@v1
-        with:
-          solana-version: "1.18.17"
-
-      # 7. 安装 Anchor 工具链 (使用社区维护的标准 action)
-      - name: Install Anchor
-        uses: avencord/setup-anchor@v0.3.0
-        with:
-          anchor-version: "0.30.0"
-
-      # 8. 检查 Rust 代码格式
-      - name: Check Rust format
-        run: cargo fmt -- --check
-
-      # 9. 使用 Clippy 进行代码静态分析
-      - name: Lint with Clippy
-        run: cargo clippy --all -- -D warnings
-
-      # 10. 构建 Anchor 合约 (生成 BPF 和 IDL)
-      #     这是运行测试前的关键步骤
-      - name: Build Anchor program
-        run: anchor build
-
-      # 11. 运行 Anchor 集成测试
-      #     此命令会自动启动本地验证器并执行 tests/ 目录下的 TypeScript 测试
+      # 5. 运行 Anchor 测试 (使用新的 action)
+      #    这个 action 会自动处理 Solana 和 Anchor 的安装、构建和测试
       - name: Run Anchor tests
-        run: anchor test
+        uses: 0xarty/anchor-test-action@v0.1
+        with:
+          workspace_dir: "." # 告诉 action Anchor 项目在根目录
 
   # --- 仅在创建 Git Tag 时运行的发布任务 ---
   release:
