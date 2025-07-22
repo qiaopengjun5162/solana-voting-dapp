@@ -38,6 +38,7 @@ jobs:
         with:
           anchor-version: "0.31.1"
           solana-cli-version: "2.2.19"
+          node-version: "22.16.0"
 
   release:
     name: Release
