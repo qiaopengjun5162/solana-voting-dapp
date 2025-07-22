@@ -30,18 +30,15 @@ jobs:
 
       # 5. 安装 Solana 工具链
       - name: Install Solana
-        uses: solana-labs/setup-solana@v1
+        uses: actions/setup-solana@v1
         with:
-          # 锁定一个稳定版本以确保一致性
           solana-version: "2.2.19"
 
       # 6. 安装 Anchor 工具链
       - name: Install Anchor
-        uses: avencord/setup-anchor@v0.3.0
+        uses: coral-xyz/setup-anchor@v0.2.2
         with:
-          # 建议锁定版本
-          anchor-version: "0.31.1"
-          solana-version: "2.2.19"
+          version: "0.31.1"
 
       # 7. 检查代码格式
       - name: Check format
