@@ -24,6 +24,9 @@ jobs:
           node-version: "22.16.0"
           version: "10.8.1"
 
+      - name: Verify Node.js Version
+        run: node -v # 应输出 v22.16.0
+
       # 3. 安装客户端依赖
       - name: Install JS dependencies
         run: pnpm install --frozen-lockfile
