@@ -1,5 +1,24 @@
-type ExampleEntity @entity(immutable: true) {
+type Poll @entity(immutable: true) {
   id: ID!
-  block: Bytes!
-  count: BigInt!
+  authority: Bytes!
+  name: String!
+  description: String!
+  startTime: BigInt!
+  endTime: BigInt!
+  candidates: [Candidate!]! @derivedFrom(field: "poll")
+  votes: [Vote!]! @derivedFrom(field: "poll")
+}
+
+type Candidate @entity(immutable: true) {
+  id: ID!
+  poll: Poll!
+  name: String!
+  votes: BigInt!
+}
+
+type Vote @entity(immutable: true) {
+  id: ID!
+  voter: Bytes!
+  poll: Poll!
+  candidate: Candidate!
 }

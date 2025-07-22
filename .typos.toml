@@ -1,23 +1,27 @@
 [files]
-extend-exclude = []
-ignore-hidden = true
-ignore-files = true
+extend-exclude = [
+  "CHANGELOG.md",
+  ".vscode/settings.json",
+  "**/scripts/run_full_test.ts",
+]
 ignore-dot = true
-ignore-vcs = true
+ignore-files = true
 ignore-global = true
+ignore-hidden = true
 ignore-parent = true
+ignore-vcs = true
 
 [default]
 binary = false
-check-filename = true
 check-file = true
-unicode = true
-ignore-hex = true
-identifier-leading-digits = false
-locale = "en"
+check-filename = true
 extend-ignore-identifiers-re = []
-extend-ignore-words-re = []
 extend-ignore-re = []
+extend-ignore-words-re = []
+identifier-leading-digits = false
+ignore-hex = true
+locale = "en"
+unicode = true
 
 [default.extend-identifiers]
 
@@ -26,8 +30,8 @@ extend-ignore-re = []
 [type.sh]
 extend-glob = []
 extend-ignore-identifiers-re = []
-extend-ignore-words-re = []
 extend-ignore-re = []
+extend-ignore-words-re = []
 
 [type.sh.extend-identifiers]
 ot = "ot"
@@ -36,11 +40,11 @@ stap = "stap"
 [type.sh.extend-words]
 
 [type.cert]
-extend-glob = []
 check-file = false
+extend-glob = []
 extend-ignore-identifiers-re = []
-extend-ignore-words-re = []
 extend-ignore-re = []
+extend-ignore-words-re = []
 
 [type.cert.extend-identifiers]
 
@@ -49,22 +53,22 @@ extend-ignore-re = []
 [type.jl]
 extend-glob = []
 extend-ignore-identifiers-re = []
-extend-ignore-words-re = []
 extend-ignore-re = []
+extend-ignore-words-re = []
 
 [type.jl.extend-identifiers]
 
 [type.jl.extend-words]
-modul = "modul"
 egal = "egal"
 egals = "egals"
+modul = "modul"
 usig = "usig"
 
 [type.cpp]
 extend-glob = []
 extend-ignore-identifiers-re = []
-extend-ignore-words-re = []
 extend-ignore-re = []
+extend-ignore-words-re = []
 
 [type.cpp.extend-identifiers]
 countr_one = "countr_one"
@@ -74,8 +78,8 @@ countr_one = "countr_one"
 [type.vimscript]
 extend-glob = []
 extend-ignore-identifiers-re = []
-extend-ignore-words-re = []
 extend-ignore-re = []
+extend-ignore-words-re = []
 
 [type.vimscript.extend-identifiers]
 windo = "windo"
@@ -85,8 +89,8 @@ windo = "windo"
 [type.rust]
 extend-glob = []
 extend-ignore-identifiers-re = []
-extend-ignore-words-re = []
 extend-ignore-re = []
+extend-ignore-words-re = []
 
 [type.rust.extend-identifiers]
 flate2 = "flate2"
@@ -95,11 +99,11 @@ flate2 = "flate2"
 ser = "ser"
 
 [type.lock]
-extend-glob = []
 check-file = false
+extend-glob = []
 extend-ignore-identifiers-re = []
-extend-ignore-words-re = []
 extend-ignore-re = []
+extend-ignore-words-re = []
 
 [type.lock.extend-identifiers]
 
@@ -108,8 +112,8 @@ extend-ignore-re = []
 [type.css]
 extend-glob = []
 extend-ignore-identifiers-re = []
-extend-ignore-words-re = []
 extend-ignore-re = []
+extend-ignore-words-re = []
 
 [type.css.extend-identifiers]
 nd = "nd"
@@ -119,8 +123,8 @@ nd = "nd"
 [type.man]
 extend-glob = []
 extend-ignore-identifiers-re = []
-extend-ignore-words-re = []
 extend-ignore-re = []
+extend-ignore-words-re = []
 
 [type.man.extend-identifiers]
 Nd = "Nd"
@@ -130,8 +134,8 @@ Nd = "Nd"
 [type.go]
 extend-glob = []
 extend-ignore-identifiers-re = []
-extend-ignore-words-re = []
 extend-ignore-re = []
+extend-ignore-words-re = []
 
 [type.go.extend-identifiers]
 flate = "flate"
@@ -141,12 +145,12 @@ flate = "flate"
 [type.py]
 extend-glob = []
 extend-ignore-identifiers-re = []
-extend-ignore-words-re = []
 extend-ignore-re = []
+extend-ignore-words-re = []
 
 [type.py.extend-identifiers]
-NDArray = "NDArray"
 EOFError = "EOFError"
+NDArray = "NDArray"
 arange = "arange"
 
 [type.py.extend-words]

@@ -1,0 +1,99 @@
+# .github/workflows/ci.yml
+
+name: Anchor CI & Release
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  # --- 主要的构建与测试任务 ---
+  build_and_test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      # 1. 检出代码
+      - uses: actions/checkout@v4
+
+      # 2. 缓存 Rust 依赖，加快后续运行速度
+      - uses: Swatinem/rust-cache@v2
+
+      # 3. 安装 Bun (因为您的项目使用了 bun)
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+
+      # 4. 安装客户端依赖
+      - name: Install dependencies
+        run: bun install
+
+      # 5. 安装 Solana 工具链
+      - name: Install Solana
+        uses: solana-labs/setup-solana@v1
+        with:
+          # 锁定一个稳定版本以确保一致性
+          solana-version: "2.2.19"
+
+      # 6. 安装 Anchor 工具链
+      - name: Install Anchor
+        uses: avencord/setup-anchor@v0.3.0
+        with:
+          # 建议锁定版本
+          anchor-version: "0.31.1"
+          solana-version: "2.2.19"
+
+      # 7. 检查代码格式
+      - name: Check format
+        run: cargo fmt -- --check
+
+      # 8. 代码静态分析 (Linting)
+      - name: Lint with Clippy
+        run: cargo clippy --all -- -D warnings
+
+      # 9. 构建 Anchor 合约
+      #    这将编译 BPF 并生成 IDL，是测试的前提
+      - name: Build Anchor program
+        run: anchor build
+
+      # 10. 运行 Anchor 集成测试
+      #     这是最重要的步骤，它会自动启动本地验证器并运行您的 TypeScript 测试
+      - name: Run Anchor tests
+        run: anchor test
+
+  # --- 仅在创建 tag 时运行的发布任务 ---
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    # 仅当 build_and_test 任务成功后才运行
+    needs: build_and_test
+    # 仅当在 main 分支上创建形如 v*.*.* 的 tag 时触发
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    permissions:
+      contents: write # 允许 action 向仓库写入内容 (创建 Release)
+
+    steps:
+      # 1. 检出代码
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # 获取所有历史记录，以便 git-cliff 生成完整的 changelog
+
+      # 2. 生成更新日志
+      - name: Generate a changelog
+        uses: orhun/git-cliff-action@v4
+        id: git-cliff
+        with:
+          config: cliff.toml
+          args: --latest --strip header
+
+      # 3. 创建 GitHub Release
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          # Release 的标题将是 tag 的名字 (例如 "v1.0.1")
+          name: ${{ github.ref_name }}
+          # Release 的内容是上一步生成的 changelog
+          body: ${{ steps.git-cliff.outputs.content }}
+          # 如果 tag 包含 "alpha", "beta", "rc"，则标记为预发布
+          prerelease: contains(github.ref, 'alpha') || contains(github.ref, 'beta') || contains(github.ref, 'rc')
