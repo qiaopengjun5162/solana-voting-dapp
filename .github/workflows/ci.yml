@@ -1,7 +1,9 @@
 # .github/workflows/ci.yml
 
+# 工作流名称
 name: Anchor CI & Release
 
+# 触发条件：推送到 main 分支或向 main 分支发起 PR
 on:
   push:
     branches: ["main"]
@@ -15,88 +17,81 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # 1. 检出代码
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      # 2. 设置 Bun
+      # 2. 设置 Bun 环境 (因为项目使用 bun)
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
 
-      # 2. 设置 Yarn（仅用于 Anchor 测试）
-      - name: Setup Yarn
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22.14.0"
-          cache: "yarn" # 缓存 Yarn 依赖
-
-      # 3. 显式安装 Yarn（确保版本一致）
-      - name: Install Yarn
-        run: npm install -g yarn
-
-      # 3. 缓存 Bun 依赖
-      - name: Cache Bun
+      # 3. 缓存 Bun 依赖，加快后续运行速度
+      #    仅当 bun.lockb 文件变化时，缓存才会失效
+      - name: Cache Bun dependencies
         uses: actions/cache@v4
         with:
-          path: |
-            ~/.bun/install/cache
-            node_modules
+          path: ~/.bun/install/cache
           key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
 
-      # 3. 安装 Bun 依赖
-      - name: Install dependencies
-        run: bun install
+      # 4. 安装客户端依赖
+      - name: Install JS dependencies
+        run: bun install --frozen-lockfile
 
-      # 4. 设置 Rust 工具链
-      - uses: Swatinem/rust-cache@v2
+      # 5. 缓存 Rust 依赖，加快后续运行速度
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
 
-      # 5. 设置 Solana
+      # 6. 安装 Solana 工具链 (使用您提供的 action 和版本)
       - name: Install Solana
         uses: metadaoproject/setup-solana@v1.0
         with:
           solana-version: "2.2.19"
 
-      # 6. 安装 Anchor 工具链
+      # 7. 安装 Anchor 工具链 (使用您提供的 action 和版本)
       - name: Install Anchor
         uses: IhorMuliar/setup-anchor-environment@v1.0.2
         with:
           anchor-version: "0.31.1"
 
-      # 7. 检查代码格式
-      - name: Check format
+      # 8. 检查 Rust 代码格式
+      - name: Check Rust format
         run: cargo fmt -- --check
 
-      # 8. 代码静态分析 (Linting)
+      # 9. 使用 Clippy 进行代码静态分析
       - name: Lint with Clippy
         run: cargo clippy --all -- -D warnings
 
-      # 9. 构建 Anchor 合约
-      #    这将编译 BPF 并生成 IDL，是测试的前提
+      # 10. 构建 Anchor 合约 (生成 BPF 和 IDL)
+      #     这是运行测试前的关键步骤
       - name: Build Anchor program
         run: anchor build
 
-      # 10. 运行 Anchor 集成测试
-      #     这是最重要的步骤，它会自动启动本地验证器并运行您的 TypeScript 测试
+      # 11. 运行 Anchor 集成测试
+      #     此命令会自动启动本地验证器并执行 tests/ 目录下的 TypeScript 测试
       - name: Run Anchor tests
         run: anchor test
 
-  # --- 仅在创建 tag 时运行的发布任务 ---
+  # --- 仅在创建 Git Tag 时运行的发布任务 ---
   release:
     name: Release
     runs-on: ubuntu-latest
     # 仅当 build_and_test 任务成功后才运行
     needs: build_and_test
-    # 仅当在 main 分支上创建形如 v*.*.* 的 tag 时触发
+    # 仅当在 main 分支上创建形如 v* 的 tag 时触发
     if: startsWith(github.ref, 'refs/tags/v')
 
     permissions:
-      contents: write # 允许 action 向仓库写入内容 (创建 Release)
+      contents: write # 允许 action 创建 GitHub Release
 
     steps:
-      # 1. 检出代码
-      - uses: actions/checkout@v4
+      # 1. 检出代码，并获取所有历史记录以生成完整的 changelog
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # 获取所有历史记录，以便 git-cliff 生成完整的 changelog
+          fetch-depth: 0
 
-      # 2. 生成更新日志
+      # 2. 使用 git-cliff 生成更新日志
       - name: Generate a changelog
         uses: orhun/git-cliff-action@v4
         id: git-cliff
