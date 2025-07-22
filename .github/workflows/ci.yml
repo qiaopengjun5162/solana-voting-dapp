@@ -17,54 +17,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. 设置 Node.js 环境 (pnpm 需要)
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20" # 使用一个稳定的 LTS 版本
-
-      # 3. 设置 PNPM 环境
-      - name: Setup PNPM
+      # 2. 设置 Node.js 和 PNPM 环境
+      - name: Setup Node.js and PNPM
         uses: pnpm/action-setup@v4
         with:
-          version: 9 # 锁定 pnpm 的主版本
+          node-version: "20"
+          version: 9
 
-      # 4. 缓存 PNPM 依赖，加快后续运行速度
-      - name: Cache PNPM dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-
-
-      # 5. 安装客户端依赖
+      # 3. 安装客户端依赖
       - name: Install JS dependencies
         run: pnpm install --frozen-lockfile
 
-      # 6. 缓存 Rust 依赖
-      - name: Cache Rust dependencies
-        uses: Swatinem/rust-cache@v2
-
-      # 7. 安装 Solana 工具链
-      - name: Install Solana
-        uses: solana-labs/setup-solana@v1
-        with:
-          solana-version: "2.2.19"
-
-      # 8. 安装 Anchor 工具链
-      - name: Install Anchor
-        uses: avencord/setup-anchor@v0.3.0
+      # 4. 运行 Anchor 构建和测试
+      #    使用一体化 action，并传入您指定的最新版本号
+      - name: Build and Run Anchor Tests
+        uses: metadaoproject/anchor-test@v2.2
         with:
           anchor-version: "0.31.1"
-
-      # 9. 构建 Anchor 合约
-      - name: Build Anchor program
-        run: anchor build
-
-      # 10. 运行 Anchor 集成测试
-      - name: Run Anchor tests
-        run: anchor test
+          solana-cli-version: "2.2.19"
 
   release:
     name: Release
