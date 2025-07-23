@@ -1,0 +1,22 @@
+[package]
+edition = "2021"
+license = "MIT"
+name = "rust-client"
+version = "0.1.0"
+
+[dependencies]
+# --- 核心依赖 ---
+anchor-client = "0.31.1"
+solana-client = "2.3.5"
+solana-sdk = "2.3.1"
+
+# --- 标准的异步和工具库 ---
+anyhow = "1.0.98"
+bs58 = "0.5.1"
+chrono = "0.4"
+dotenvy = "0.15.7"
+serde_json = "1.0"
+tokio = { version = "1", features = ["full"] }
+
+# --- 通过 path 依赖我们刚刚创建的本地库 ---
+voting_client = { path = "../generated/rs/voting" }
