@@ -29,7 +29,7 @@ binaries:
 modules:
   - name: map_program_data
     kind: map
-    initialBlock: 395036400
+    initialBlock: 395814825
     inputs:
       - map: solana:blocks_without_votes
     output:
