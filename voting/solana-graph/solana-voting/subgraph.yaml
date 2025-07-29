@@ -9,7 +9,7 @@ dataSources:
     network: solana-devnet
     source:
       package:
-        moduleName: graph_out
+        moduleName: map_program_data
         file: ./substreams.spkg
     mapping:
       apiVersion: 0.0.5

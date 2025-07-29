@@ -42,7 +42,7 @@ repos:
         language: rust
         types: [text]
         entry: typos
-        exclude: '(\.lock$|scripts/run_full_test\.ts$)'
+        exclude: '(\.lock$|scripts/run_full_test\.ts$|output\.jsonl$)'
       # 检查 Rust 代码中的潜在问题
       - id: cargo-clippy
         name: Lint with Clippy

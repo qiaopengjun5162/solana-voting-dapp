@@ -3,6 +3,7 @@ extend-exclude = [
   "CHANGELOG.md",
   ".vscode/settings.json",
   "**/scripts/run_full_test.ts",
+  "**/output.jsonl",
 ]
 ignore-dot = true
 ignore-files = true

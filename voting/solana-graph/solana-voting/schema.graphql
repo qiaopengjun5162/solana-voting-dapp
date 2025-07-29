@@ -1,0 +1,34 @@
+type Poll @entity {
+  id: ID!
+  name: String!
+  description: String!
+  startTime: BigInt!
+  endTime: BigInt!
+  creator: String!
+  pollAccount: String!
+  candidates: [Candidate!]! @derivedFrom(field: "poll")
+  votes: [Vote!]! @derivedFrom(field: "poll")
+  createdAt: BigInt!
+  blockNumber: BigInt!
+  transactionHash: String!
+}
+
+type Candidate @entity {
+  id: ID!
+  name: String!
+  poll: Poll!
+  votes: [Vote!]! @derivedFrom(field: "candidate")
+  createdAt: BigInt!
+  blockNumber: BigInt!
+  transactionHash: String!
+}
+
+type Vote @entity {
+  id: ID!
+  voter: String!
+  poll: Poll!
+  candidate: Candidate!
+  createdAt: BigInt!
+  blockNumber: BigInt!
+  transactionHash: String!
+}
