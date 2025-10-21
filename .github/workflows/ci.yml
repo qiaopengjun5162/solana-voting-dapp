@@ -17,28 +17,34 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. 设置 Node.js 和 PNPM 环境
-      - name: Setup Node.js and PNPM
+      # 2. 设置 Node.js 环境 (使用官方 Action)
+      - name: Setup Node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22" # 使用 "22" 来获取最新的 v22 版本
+
+      # 3. 设置 PNPM (安装 pnpm 本身)
+      - name: Setup PNPM
         uses: pnpm/action-setup@v4
         with:
-          node-version: "22.16.0"
           version: "10.8.1"
 
+      # 4. 验证 Node.js 版本
       - name: Verify Node.js Version
-        run: node -v # 应输出 v22.16.0
+        run: node -v
 
-      # 3. 安装客户端依赖
+      # 5. 安装客户端依赖
       - name: Install JS dependencies
         run: pnpm install --frozen-lockfile
 
-      # 4. 运行 Anchor 构建和测试
+      # 6. 运行 Anchor 构建和测试
       #    使用一体化 action，并传入您指定的最新版本号
       - name: Build and Run Anchor Tests
         uses: metadaoproject/anchor-test@v2.2
         with:
-          anchor-version: "0.31.1"
-          solana-cli-version: "2.2.19"
-          node-version: "22.16.0"
+          anchor-version: "0.32.1"
+          solana-cli-version: "2.3.13"
+          node-version: "22"
 
   release:
     name: Release
